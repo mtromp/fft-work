@@ -19,40 +19,51 @@ canvas{
 <body>
 
   <script>
+
+  function displayArray(arrayToDisplay){
+    var x=0;
+    var y=zeroPoint;
+    var i;
+    for (i=0; i<=numPixelsX; i+=1){
+      ctx.moveTo(x,y);
+      x = i;
+      y = zeroPoint - arrayToDisplay[i] * amplification;
+      ctx.lineTo(x,y);
+      ctx.stroke();
+    }
+  } // function displayArray
+
+  function initializeArray(arrayToInit){
+    var degreePixelsFactor = 2.0 * Math.PI / numPixelsX
+    var pixel;
+    for (pixel=0; pixel<=numPixelsX; pixel+=1){
+      sineWave[pixel] = Math.sin(pixel * degreePixelsFactor);
+    }
+  }
+
+  function drawZeroLine(){
+    var i;
+    for(i=0; i<numPixelsX; i+= 16){
+     ctx.moveTo(i+4,zeroPoint);
+     ctx.lineTo(i,zeroPoint);
+    }
+    ctx.stroke();
+  }
+
   var numPixelsX = 1024;
   var numPixelsY = 360;
   var zeroPoint = numPixelsY / 2;
   var amplification = numPixelsY / 3;
   var sineWave = [];
-  var degreePixelsFactor = 2.0 * Math.PI / numPixelsX
-  for (pixel=0; pixel<=numPixelsX; pixel+=1){
-    sineWave[pixel] = Math.sin(pixel * degreePixelsFactor);
-  }
+  initializeArray(sineWave);
 
-  // var c = document.getElementById("myCanvas");
   var c = document.createElement("canvas");
   c.width = numPixelsX;
   c.height = 360;
   document.body.appendChild(c);
   var ctx = c.getContext("2d");
-  var i;
-  for(i=0; i<numPixelsX; i+= 16){
-   ctx.moveTo(i+4,zeroPoint);
-   ctx.lineTo(i,zeroPoint);
-
-  }
-  ctx.stroke();
-
-  var x=0;
-  var y=zeroPoint;
-
-  for (i=0; i<=numPixelsX; i+=1){
-    ctx.moveTo(x,y);
-    x = i;
-    y = zeroPoint - sineWave[i] * amplification;
-    ctx.lineTo(x,y);
-    ctx.stroke();
-  }
+  drawZeroLine();
+  displayArray(sineWave);
   </script>
 </body>
 </html>
