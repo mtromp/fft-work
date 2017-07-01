@@ -19,35 +19,61 @@ canvas{
 <body>
 
   <script>
+  "use strict";
+
+  var cosTable = [];
+  var sinTable = [];
+
+  function initializeSinCosTables(){
+    for (var i = 0; i < numPixelsX / 2; i++) {
+      cosTable[i] = Math.cos(2 * Math.PI * i / numPixelsX);
+      sinTable[i] = Math.sin(2 * Math.PI * i / numPixelsX);
+    }
+  }//function initializeSinCosTables
 
   function displayArray(arrayToDisplay){
     var x=0;
     var y=zeroPoint;
-    var i;
-    for (i=0; i<=numPixelsX; i+=1){
+    ctx.beginPath();
+    for (var i=0; i<=numPixelsX; i+=1){
       ctx.moveTo(x,y);
       x = i;
       y = zeroPoint - arrayToDisplay[i] * amplification;
       ctx.lineTo(x,y);
       ctx.stroke();
     }
+    ctx.closePath();
+
   } // function displayArray
 
   function initializeArray(arrayToInit){
     var degreePixelsFactor = 2.0 * Math.PI / numPixelsX
-    var pixel;
-    for (pixel=0; pixel<=numPixelsX; pixel+=1){
+    for (var pixel=0; pixel<=numPixelsX; pixel+=1){
       sineWave[pixel] = Math.sin(pixel * degreePixelsFactor);
     }
   }
 
   function drawZeroLine(){
-    var i;
-    for(i=0; i<numPixelsX; i+= 16){
-     ctx.moveTo(i+4,zeroPoint);
-     ctx.lineTo(i,zeroPoint);
+    ctx.beginPath();
+    ctx.strokeStyle="#000000";
+    for(var i=0; i<numPixelsX; i+= 16){
+      ctx.moveTo(i+4,zeroPoint);
+      ctx.lineTo(i,zeroPoint);
+      ctx.stroke();
     }
-    ctx.stroke();
+    // ctx.stroke();
+    ctx.closePath();
+  }
+
+  function doFFT(initialArray){
+    var fftArray = [];
+    // Place even in RealArray and odd in ImaginaryArray
+    for (var i = 0; i < numPixelsX / 2; i++) {
+      fftArray[i] = initialArray[i * 2];
+      fftArray[i + numPixelsX / 2] = initialArray[(i * 2) + 1];
+    }
+    ctx.strokeStyle="#FF0000";
+    displayArray(fftArray);
   }
 
   var numPixelsX = 1024;
@@ -56,6 +82,7 @@ canvas{
   var amplification = numPixelsY / 3;
   var sineWave = [];
   initializeArray(sineWave);
+  initializeSinCosTables();
 
   var c = document.createElement("canvas");
   c.width = numPixelsX;
@@ -63,7 +90,9 @@ canvas{
   document.body.appendChild(c);
   var ctx = c.getContext("2d");
   drawZeroLine();
+  ctx.strokeStyle="#00FF00";
   displayArray(sineWave);
+  doFFT(sineWave);
   </script>
 </body>
 </html>
