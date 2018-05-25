@@ -1,0 +1,135 @@
+<!DOCTYPE HTML>
+<!-- This does not work. The complex number library is available via Node.js npm
+    I don't know how to setup Node.js to do my experiments. Feeling frustrated!!
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>FFT Canvas</title>
+<style type="text/css">
+
+body{
+  overflow:hidden;
+  background:#ffffff;
+}
+canvas{
+  border:1px solid #d3d3d3;
+}
+
+</style>
+
+<body>
+
+  <script>
+  "use strict";
+
+  // var cosTable = [];
+  // var sinTable = [];
+  //
+  // function initializeSinCosTables(){
+  //   for (var i = 0; i < twoN; i++) {
+  //     cosTable[i] = Math.cos(2 * Math.PI * i / twoN);
+  //     sinTable[i] = Math.sin(2 * Math.PI * i / twoN);
+  //   }
+  // }//function initializeSinCosTables
+  //
+  function displayArray(arrayToDisplay){
+    var x=0;
+    var y=zeroPoint;
+    ctx.beginPath();
+    for (var i=0; i<numPixelsX; i++){
+      ctx.moveTo(x,y);
+      x = i;
+      y = zeroPoint - arrayToDisplay[i] * amplification;
+      ctx.lineTo(x,y);
+      ctx.stroke();
+    }
+    ctx.closePath();
+  } // function displayArray
+  //
+  // function initializeArray(arrayToInit){
+  //   var degreePixelsFactor = 2.0 * Math.PI / twoN
+  //   for (var pixel=0; pixel<twoN; pixel++){
+  //     arrayToInit[pixel] = Math.sin(pixel * degreePixelsFactor);
+  //   }
+  // }
+
+  var twiddleArray = [];
+  //
+  function initTwiddleArray(){
+    var forExp;
+    var twiddle;
+    for (var k=0; k < N-1; k++){
+      twiddle = -2.0 * Math.PI * k/twoN;
+      forExp = Math.complex(0,twiddle);
+      twiddleArray[k] = Math.exp(forExp);
+    }
+  }
+
+  function drawZeroLine(){
+    ctx.beginPath();
+    ctx.strokeStyle="#000000";
+    for(var i=0; i<numPixelsX; i+= 16){
+      ctx.moveTo(i+4,zeroPoint);
+      ctx.lineTo(i,zeroPoint);
+      ctx.stroke();
+    }
+    // ctx.stroke();
+    ctx.closePath();
+  }
+
+  // function doFFT(initialArray){
+  //   var fftArray = [];
+  //   // Place even in RealArray and odd in ImaginaryArray
+  //   for (var i = 0; i < N; i++) {
+  //     fftArray[i] = initialArray[i * 2];
+  //     fftArray[i + N] = initialArray[(i * 2) + 1];
+  //   }
+  //   ctx.strokeStyle="#FF0000";
+  //   displayArray(fftArray);
+  //
+  //   for (var stride = N / 2; stride > 1; stride=stride/2) {
+  //     console.log("Stride value: " + stride);
+  //     var fftKvalue;
+  //     var fftKStrideValue;
+  //     for (var k = 0; k < N; k++) {
+  //       // Don't know about the sine/cosine information and indeces)
+  //       fftKvalue = fftArray[k]; //even
+  //       fftKStrideValue = fftArray[k+stride]; //odd
+  //
+  //       fftArray[k] = fftKvalue + fftKStrideValue*sinTable[k];
+  //       fftArray[k+stride] = fftKvalue - fftKStrideValue*sinTable[k];
+  //     } // for k
+  //     ctx.strokeStyle="#660000";
+  //     displayArray(fftArray);
+  //   } // for stride
+  // }
+
+  // Display values
+  var numPixelsX = 1024; // power of two
+  var numPixelsY = 360;
+  var zeroPoint = numPixelsY / 2;
+  var amplification = numPixelsY / 3;
+  // FFT Values dimensions
+  var twoN = numPixelsX; //all the real values
+  var N = twoN / 2; //number of complex array points.
+
+  var sineWave = [];
+  // initializeArray(sineWave);
+  // initializeSinCosTables();
+
+  var c = document.createElement("canvas");
+  c.width = numPixelsX;
+  c.height = numPixelsY;
+  document.body.appendChild(c);
+  var ctx = c.getContext("2d");
+  drawZeroLine();
+  ctx.strokeStyle="#00FF00";
+  initTwiddleArray();
+  displayArray(twiddleArray);
+  // displayArray(sineWave);
+  // doFFT(sineWave);
+  </script>
+</body>
+</html>
+-->
