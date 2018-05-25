@@ -25,9 +25,9 @@ canvas{
   var sinTable = [];
 
   function initializeSinCosTables(){
-    for (var i = 0; i < numPixelsX / 2; i++) {
-      cosTable[i] = Math.cos(2 * Math.PI * i / numPixelsX);
-      sinTable[i] = Math.sin(2 * Math.PI * i / numPixelsX);
+    for (var i = 0; i < twoN; i++) {
+      cosTable[i] = Math.cos(2 * Math.PI * i / twoN);
+      sinTable[i] = Math.sin(2 * Math.PI * i / twoN);
     }
   }//function initializeSinCosTables
 
@@ -35,7 +35,7 @@ canvas{
     var x=0;
     var y=zeroPoint;
     ctx.beginPath();
-    for (var i=0; i<=numPixelsX; i+=1){
+    for (var i=0; i<numPixelsX; i++){
       ctx.moveTo(x,y);
       x = i;
       y = zeroPoint - arrayToDisplay[i] * amplification;
@@ -43,13 +43,12 @@ canvas{
       ctx.stroke();
     }
     ctx.closePath();
-
   } // function displayArray
 
   function initializeArray(arrayToInit){
-    var degreePixelsFactor = 2.0 * Math.PI / numPixelsX
-    for (var pixel=0; pixel<=numPixelsX; pixel+=1){
-      sineWave[pixel] = Math.sin(pixel * degreePixelsFactor);
+    var degreePixelsFactor = 2.0 * Math.PI / twoN
+    for (var pixel=0; pixel<twoN; pixel++){
+      arrayToInit[pixel] = Math.sin(pixel * degreePixelsFactor);
     }
   }
 
@@ -68,25 +67,46 @@ canvas{
   function doFFT(initialArray){
     var fftArray = [];
     // Place even in RealArray and odd in ImaginaryArray
-    for (var i = 0; i < numPixelsX / 2; i++) {
+    for (var i = 0; i < N; i++) {
       fftArray[i] = initialArray[i * 2];
-      fftArray[i + numPixelsX / 2] = initialArray[(i * 2) + 1];
+      fftArray[i + N] = initialArray[(i * 2) + 1];
     }
     ctx.strokeStyle="#FF0000";
     displayArray(fftArray);
+
+    for (var stride = N / 2; stride > 1; stride=stride/2) {
+      console.log("Stride value: " + stride);
+      var fftKvalue;
+      var fftKStrideValue;
+      for (var k = 0; k < N; k++) {
+        // Don't know about the sine/cosine information and indeces)
+        fftKvalue = fftArray[k]; //even
+        fftKStrideValue = fftArray[k+stride]; //odd
+
+        fftArray[k] = fftKvalue + fftKStrideValue*sinTable[k];
+        fftArray[k+stride] = fftKvalue - fftKStrideValue*sinTable[k];
+      } // for k
+      ctx.strokeStyle="#660000";
+      displayArray(fftArray);
+    } // for stride
   }
 
-  var numPixelsX = 1024;
+  // Display values
+  var numPixelsX = 1024; // power of two
   var numPixelsY = 360;
   var zeroPoint = numPixelsY / 2;
   var amplification = numPixelsY / 3;
+  // FFT Values dimensions
+  var twoN = numPixelsX; //all the real values
+  var N = twoN / 2; //number of complex array points.
+
   var sineWave = [];
   initializeArray(sineWave);
   initializeSinCosTables();
 
   var c = document.createElement("canvas");
   c.width = numPixelsX;
-  c.height = 360;
+  c.height = numPixelsY;
   document.body.appendChild(c);
   var ctx = c.getContext("2d");
   drawZeroLine();
