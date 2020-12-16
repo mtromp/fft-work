@@ -38,3 +38,6 @@ Use the information from pp 7-11 of: http://www.ti.com/lit/an/spra291/spra291.pd
 
 ### Resources ###
 * https://www.gnu.org/software/gsl/doc/html/fft.html
+* https://www.drdobbs.com/cpp/a-simple-and-efficient-fft-implementatio/199500857
+  - This has an article written by Vlodymyr Myrnyy, whose C++ code I have included
+    in the from-others directory.
