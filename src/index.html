@@ -1,118 +1,118 @@
 <!DOCTYPE HTML>
 <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>FFT Canvas</title>
+    <style type="text/css">
+      body{
+        overflow:hidden;
+        background:#ffffff;
+      }
+      canvas{
+        border:1px solid #d3d3d3;
+      }
+    </style>
+    <script src="scripts/math.min.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <script>
+      "use strict";
 
-<head>
-<meta charset="UTF-8">
-<title>FFT Canvas</title>
-<style type="text/css">
+      var cosTable = [];
+      var sinTable = [];
 
-body{
-  overflow:hidden;
-  background:#ffffff;
-}
-canvas{
-  border:1px solid #d3d3d3;
-}
+      function initializeSinCosTables(){
+        for (var i = 0; i < twoN; i++) {
+          cosTable[i] = Math.cos(2 * Math.PI * i / twoN);
+          sinTable[i] = Math.sin(2 * Math.PI * i / twoN);
+        }
+      }//function initializeSinCosTables
 
-</style>
+      function displayArray(arrayToDisplay){
+        var x=0;
+        var y=zeroPoint;
+        ctx.beginPath();
+        for (var i=0; i<numPixelsX; i++){
+          ctx.moveTo(x,y);
+          x = i;
+          y = zeroPoint - arrayToDisplay[i] * amplification;
+          ctx.lineTo(x,y);
+          ctx.stroke();
+        }
+        ctx.closePath();
+      } // function displayArray
 
-<body>
+      function initializeArray(arrayToInit){
+        var degreePixelsFactor = 2.0 * Math.PI / twoN
+        for (var pixel=0; pixel<twoN; pixel++){
+          arrayToInit[pixel] = Math.sin(pixel * degreePixelsFactor);
+        }
+      }
 
-  <script>
-  "use strict";
+      function drawZeroLine(){
+        ctx.beginPath();
+        ctx.strokeStyle="#000000";
+        for(var i=0; i<numPixelsX; i+= 16){
+          ctx.moveTo(i+4,zeroPoint);
+          ctx.lineTo(i,zeroPoint);
+          ctx.stroke();
+        }
+        // ctx.stroke();
+        ctx.closePath();
+      }
 
-  var cosTable = [];
-  var sinTable = [];
+      function doFFT(initialArray){
+        var fftArray = [];
+        // Place even in RealArray and odd in ImaginaryArray
+        for (var i = 0; i < N; i++) {
+          fftArray[i] = initialArray[i * 2];
+          fftArray[i + N] = initialArray[(i * 2) + 1];
+        }
+        for (var i = 0; i < twoN; i++) {
+          console.log("fftArray[i] split: " + i + " " + fftArray[i]);
+        }
+        ctx.strokeStyle="#FF0000";
+        displayArray(fftArray);
 
-  function initializeSinCosTables(){
-    for (var i = 0; i < twoN; i++) {
-      cosTable[i] = Math.cos(2 * Math.PI * i / twoN);
-      sinTable[i] = Math.sin(2 * Math.PI * i / twoN);
-    }
-  }//function initializeSinCosTables
+        for (var stride = N / 2; stride > 1; stride=stride/2) {
+          console.log("Stride value: " + stride);
+          var fftKvalue;
+          var fftKStrideValue;
+          for (var k = 0; k < N; k++) {
+            // Don't know about the sine/cosine information and indices)
+            fftKvalue = fftArray[k]; //even
+            fftKStrideValue = fftArray[k+stride]; //odd
 
-  function displayArray(arrayToDisplay){
-    var x=0;
-    var y=zeroPoint;
-    ctx.beginPath();
-    for (var i=0; i<numPixelsX; i++){
-      ctx.moveTo(x,y);
-      x = i;
-      y = zeroPoint - arrayToDisplay[i] * amplification;
-      ctx.lineTo(x,y);
-      ctx.stroke();
-    }
-    ctx.closePath();
-  } // function displayArray
+            fftArray[k] = fftKvalue + fftKStrideValue*sinTable[k];
+            fftArray[k+stride] = fftKvalue - fftKStrideValue*sinTable[k];
+          } // for k
+          ctx.strokeStyle="#660000";
+          displayArray(fftArray);
+        } // for stride
+      }
 
-  function initializeArray(arrayToInit){
-    var degreePixelsFactor = 2.0 * Math.PI / twoN
-    for (var pixel=0; pixel<twoN; pixel++){
-      arrayToInit[pixel] = Math.sin(pixel * degreePixelsFactor);
-    }
-  }
+      // Display values
+      var numPixelsX = 1024; // power of two
+      var numPixelsY = 360;
+      var zeroPoint = numPixelsY / 2;
+      var amplification = numPixelsY / 3;
+      // FFT Values dimensions
+      var twoN = numPixelsX; //all the real values
+      var N = twoN / 2; //number of complex array points.
 
-  function drawZeroLine(){
-    ctx.beginPath();
-    ctx.strokeStyle="#000000";
-    for(var i=0; i<numPixelsX; i+= 16){
-      ctx.moveTo(i+4,zeroPoint);
-      ctx.lineTo(i,zeroPoint);
-      ctx.stroke();
-    }
-    // ctx.stroke();
-    ctx.closePath();
-  }
+      var sineWave = [];
+      initializeArray(sineWave);
+      initializeSinCosTables();
 
-  function doFFT(initialArray){
-    var fftArray = [];
-    // Place even in RealArray and odd in ImaginaryArray
-    for (var i = 0; i < N; i++) {
-      fftArray[i] = initialArray[i * 2];
-      fftArray[i + N] = initialArray[(i * 2) + 1];
-    }
-    ctx.strokeStyle="#FF0000";
-    displayArray(fftArray);
-
-    for (var stride = N / 2; stride > 1; stride=stride/2) {
-      console.log("Stride value: " + stride);
-      var fftKvalue;
-      var fftKStrideValue;
-      for (var k = 0; k < N; k++) {
-        // Don't know about the sine/cosine information and indeces)
-        fftKvalue = fftArray[k]; //even
-        fftKStrideValue = fftArray[k+stride]; //odd
-
-        fftArray[k] = fftKvalue + fftKStrideValue*sinTable[k];
-        fftArray[k+stride] = fftKvalue - fftKStrideValue*sinTable[k];
-      } // for k
-      ctx.strokeStyle="#660000";
-      displayArray(fftArray);
-    } // for stride
-  }
-
-  // Display values
-  var numPixelsX = 1024; // power of two
-  var numPixelsY = 360;
-  var zeroPoint = numPixelsY / 2;
-  var amplification = numPixelsY / 3;
-  // FFT Values dimensions
-  var twoN = numPixelsX; //all the real values
-  var N = twoN / 2; //number of complex array points.
-
-  var sineWave = [];
-  initializeArray(sineWave);
-  initializeSinCosTables();
-
-  var c = document.createElement("canvas");
-  c.width = numPixelsX;
-  c.height = numPixelsY;
-  document.body.appendChild(c);
-  var ctx = c.getContext("2d");
-  drawZeroLine();
-  ctx.strokeStyle="#00FF00";
-  displayArray(sineWave);
-  doFFT(sineWave);
-  </script>
-</body>
+      var c = document.createElement("canvas");
+      c.width = numPixelsX;
+      c.height = numPixelsY;
+      document.body.appendChild(c);
+      var ctx = c.getContext("2d");
+      drawZeroLine();
+      ctx.strokeStyle="#00FF00";
+      displayArray(sineWave);
+      doFFT(sineWave);
+    </script>
+  </body>
 </html>
