@@ -1,0 +1,251 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>FFT Canvas</title>
+    <style type="text/css">
+      body{
+        overflow:hidden;
+        background:#ffffff;
+      }
+      canvas{
+        border:1px solid #d3d3d3;
+      }
+    </style>
+    <script src="scripts/fft.js" type="text/javascript"></script>
+    <script src="scripts/fft-test.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <script>
+      "use strict";
+      // values to change. Bit width determines size of arrays via
+      //  the power of two used to calculate numPixelsX
+      var bitWidth = 10;
+      var numPixelsX = 2 ** bitWidth; // power of two
+      var numPixelsY = 360;
+      var zeroPoint = numPixelsY / 2;
+      var amplification = numPixelsY / 3;
+      // FFT Values dimensions
+      var twoN = numPixelsX; //all the real values
+      // 20210318: start with all complex points
+      var N = twoN; //number of complex array points.
+
+      var cosTable = [];
+      var sinTable = [];
+
+      function initializeSinCosTables(){
+        for (var i = 0; i < twoN; i++) {
+          cosTable[i] = round(Math.cos(2 * Math.PI * i / twoN));
+          sinTable[i] = round(Math.sin(2 * Math.PI * i / twoN));
+        }
+      }//function initializeSinCosTables
+
+      function displayArray(arrayToDisplay){
+        var normalizeValue = 1;
+        var arrayMin = Math.min(...arrayToDisplay);
+        var arrayMax = Math.max(...arrayToDisplay);
+        arrayMax = Math.max(Math.abs(arrayMin), Math.abs(arrayMax));
+        if (normalizeValue < arrayMax) normalizeValue = arrayMax;
+        var x=0;
+        var y=zeroPoint;
+        ctx.beginPath();
+        for (var i=0; i<numPixelsX; i++){
+          ctx.moveTo(x,y);
+          x = i;
+          y = zeroPoint - (arrayToDisplay[i]/normalizeValue) * amplification;
+          ctx.lineTo(x,y);
+          ctx.stroke();
+        }
+        ctx.closePath();
+      } // function displayArray
+
+      function round(value, decimals){
+        if (Math.abs(value) < 1.0e-10){  // set really small values to zero
+           value = 0.0
+        };
+        return Number(value.toPrecision(decimals));
+      }
+      // initialize Cosine wave.
+      function initializeArray(arrayToInit){
+        var degreePixelsFactor = 2.0 * Math.PI / twoN
+        for (var pixel=0; pixel<twoN; pixel++){
+          arrayToInit[pixel] = round(Math.cos(pixel * degreePixelsFactor),6);
+        }
+      }
+
+      function initZeroArray(arrayToInit){
+        for (var pixel=0; pixel<twoN; pixel++){
+          arrayToInit[pixel] = 0.0;
+        }
+      }
+
+      function drawZeroLine(){
+        ctx.beginPath();
+        ctx.strokeStyle="#000000";
+        for(var i=0; i<numPixelsX; i+= 16){
+          ctx.moveTo(i+4,zeroPoint);
+          ctx.lineTo(i,zeroPoint);
+          ctx.stroke();
+        }
+        // ctx.stroke();
+        ctx.closePath();
+      }
+
+      function reverseWidthBits(value, width) {
+    		var result = 0;
+    		for (var i = 0; i < width; i++) {
+    			result = (result << 1) | (value & 1);
+    			value >>>= 1;
+    		}
+    		return result;
+    	}
+
+      function reconstitute(finalArray, realArray, imagArray){
+        //the zeroeth element:
+        finalArray[0] = realArray[0];
+        for (var i=1; i < twoN; i++){
+          finalArray[i] = (realArray[twoN-i]+realArray[i])**2 + imagArray[twoN-i]
+        }
+      }
+      function unscramble(realArray, imagArray){
+        // Bit-reversed addressing permutation
+        for (var i = 0; i < twoN; i++) {
+          var j = reverseWidthBits(i, bitWidth);
+          if (j > i) {
+            var temp = realArray[i];
+            realArray[i] = realArray[j];
+            realArray[j] = temp;
+            temp = imagArray[i];
+            imagArray[i] = imagArray[j];
+            imagArray[j] = temp;
+          }
+        }
+      }
+      // 20210318:
+      // Make this be a standard FFT with real and imaginary arrays
+      // Assume array size is power of two
+      // https://www.katjaas.nl/FFTimplement/FFTimplement.html reference with
+      // good pictures.
+
+      // k is index of frequency domain and n is index in time domain.
+      // the arrays are time domain originally.
+      function doFFT(aRealArray, bImagArray){
+        ctx.strokeStyle="#FF0000";
+        displayArray(aRealArray);
+
+        var index = 0;
+        var pass = 1;
+        var nspan, cosTwiddle, sinTwiddle, tempReal, tempImag, twiddleIndex;
+        for (var stride=N >> 1; stride>0; stride>>=1) {
+          console.log("Stride value: " + stride);
+          var strideIndex = index + stride;
+          for (var submatrix = 0; submatrix < (N>>1)/stride; submatrix++) {
+            for (var node = 0; node < stride; node++) {
+              twiddleIndex = reverseWidthBits(index >> (bitWidth - pass), bitWidth);
+              // The values for the new nspan element need a multiplication
+              //   by the twiddle factor which can be looked up in a table.
+              cosTwiddle = cosTable[twiddleIndex];
+              sinTwiddle = sinTable[twiddleIndex];
+
+              nspan = index + stride;
+              // the value for the new index element is straight addition.
+              tempReal = aRealArray[nspan]*cosTwiddle + bImagArray[nspan]*sinTwiddle;
+              tempImag = bImagArray[nspan]*cosTwiddle + aRealArray[nspan]*sinTwiddle;
+              aRealArray[nspan] = aRealArray[index] - tempReal;
+              bImagArray[nspan] = bImagArray[index] - tempImag;
+              aRealArray[index] = aRealArray[index] + tempReal;
+              bImagArray[index] = bImagArray[index] + tempImag;
+
+              index++;
+            }// for node
+            // skip the part of the matrix with the strided values
+            //    they've already been used in the computation.
+            index = (index + stride) & (N - 1);
+          } // for submatrix
+          // ctx.strokeStyle="#660000";
+          // displayArray(aRealArray);
+          pass++;
+        } // for stride
+
+        unscramble(aRealArray,bImagArray);
+
+      }//end doFFT
+
+      // function doRealFFT(initialArray){
+      //   var fftArray = [];
+      //   var fftRealArray = [];
+      //   var fftImagArray = [];
+      //   // Place even in RealArray and odd in ImaginaryArray
+      //   for (var i = 0; i < N; i++) {
+      //     fftArray[i] = initialArray[i * 2];
+      //     fftArray[i + N] = initialArray[(i * 2) + 1];
+      //   }
+      //   for (var i = 0; i < twoN; i++) {
+      //     console.log("fftArray[i] split: " + i + " " + fftArray[i]);
+      //   }
+      //   ctx.strokeStyle="#FF0000";
+      //   displayArray(fftArray);
+      //
+      //   for (var stride = N / 2; stride > 1; stride=stride/2) {
+      //     console.log("Stride value: " + stride);
+      //     var fftKvalue;
+      //     var fftKStrideValue;
+      //     for (var k = 0; k < N; k++) {
+      //       // Don't know about the sine/cosine information and indices)
+      //       fftKvalue = fftArray[k]; //even
+      //       fftKStrideValue = fftArray[k+stride]; //odd
+      //
+      //       fftArray[k] = fftKvalue + fftKStrideValue*sinTable[k];
+      //       fftArray[k+stride] = fftKvalue - fftKStrideValue*sinTable[k];
+      //     } // for k
+      //     ctx.strokeStyle="#660000";
+      //     displayArray(fftArray);
+      //   } // for stride
+      // }
+
+      // Display values
+      // First work with the Project Nayuki code
+      // var sineWave = [];
+      // initializeArray(sineWave);
+      // initializeSinCosTables();
+      //
+      var c = document.createElement("canvas");
+      c.width = numPixelsX;
+      c.height = numPixelsY;
+      document.body.appendChild(c);
+      var ctx = c.getContext("2d");
+      drawZeroLine();
+      ctx.strokeStyle="#00FF00";
+      // displayArray(sineWave);
+      // doFFT(sineWave);
+
+      var cosTable = new Array(twoN);
+      var sinTable = new Array(twoN);
+      initializeSinCosTables();
+
+      var inputreal = new Array(twoN);
+      var inputimag = new Array(twoN);
+      var finalarray = new Array(twoN);
+
+      initializeArray(inputreal); // sine sineWave
+      initZeroArray(inputimag);
+
+      doFFT(inputreal,inputimag);
+      //reconstitute(finalarray, inputreal, inputimag);
+      // naiveDft(inputreal, inputimag, expectreal, expectimag, false);
+      // displayArray(expectreal);
+      // displayArray(expectimag);
+      // var actualreal = inputreal.slice();
+      // var actualimag = inputimag.slice();
+      //
+      // transform(actualreal, actualimag);
+      ctx.strokeStyle="#0000FF";
+      // var finalreal = new Array(twoN);
+      // reconstitute(finalreal, actualreal, actualimag); //place result in actualreal
+      displayArray(inputreal);
+      ctx.strokeStyle="#00FF00";
+      displayArray(inputimag);
+
+    </script>
+  </body>
+</html>
