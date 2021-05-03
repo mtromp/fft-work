@@ -12,7 +12,8 @@
         border:1px solid #d3d3d3;
       }
     </style>
-    <script src="scripts/math.min.js" type="text/javascript"></script>
+    <script src="scripts/fft.js" type="text/javascript"></script>
+    <script src="scripts/fft-test.js" type="text/javascript"></script>
   </head>
   <body>
     <script>
@@ -45,7 +46,12 @@
       function initializeArray(arrayToInit){
         var degreePixelsFactor = 2.0 * Math.PI / twoN
         for (var pixel=0; pixel<twoN; pixel++){
-          arrayToInit[pixel] = Math.sin(pixel * degreePixelsFactor);
+          arrayToInit[pixel] = Math.cos(pixel * degreePixelsFactor);
+        }
+      }
+      function initZeroArray(arrayToInit){
+        for (var pixel=0; pixel<twoN; pixel++){
+          arrayToInit[pixel] = 0.0;
         }
       }
 
@@ -59,6 +65,13 @@
         }
         // ctx.stroke();
         ctx.closePath();
+      }
+      function reconstitute(finalArray, realArray, imagArray){
+        //the zeroeth element:
+        finalArray[0] = realArray[0];
+        for (var i=1; i < twoN; i++){
+          finalArray[i] = (realArray[twoN-i]+realArray[i])**2 + imagArray[twoN-i]
+        }
       }
 
       function doFFT(initialArray){
@@ -99,11 +112,11 @@
       // FFT Values dimensions
       var twoN = numPixelsX; //all the real values
       var N = twoN / 2; //number of complex array points.
-
-      var sineWave = [];
-      initializeArray(sineWave);
-      initializeSinCosTables();
-
+      // First work with the Project Nayuki code
+      // var sineWave = [];
+      // initializeArray(sineWave);
+      // initializeSinCosTables();
+      //
       var c = document.createElement("canvas");
       c.width = numPixelsX;
       c.height = numPixelsY;
@@ -111,8 +124,32 @@
       var ctx = c.getContext("2d");
       drawZeroLine();
       ctx.strokeStyle="#00FF00";
-      displayArray(sineWave);
-      doFFT(sineWave);
+      // displayArray(sineWave);
+      // doFFT(sineWave);
+
+      var inputreal = new Array(twoN);
+      var inputimag = new Array(twoN);
+      initializeArray(inputreal); // sine sineWave
+      initZeroArray(inputimag);
+      displayArray(inputreal);
+      var expectreal = new Array(twoN);
+      var expectimag = new Array(twoN);
+      ctx.strokeStyle="#FF0000";
+
+      naiveDft(inputreal, inputimag, expectreal, expectimag, false);
+      displayArray(expectreal);
+      ctx.strokeStyle="#0000FF";
+      displayArray(expectimag);
+      var actualreal = inputreal.slice();
+      var actualimag = inputimag.slice();
+
+      // transform(actualreal, actualimag);
+      // ctx.strokeStyle="#0000FF";
+      // var finalreal = new Array(twoN);
+      // reconstitute(finalreal, actualreal, actualimag); //place result in actualreal
+      // displayArray(actualreal);
+      // displayArray(actualimag);
+
     </script>
   </body>
 </html>
