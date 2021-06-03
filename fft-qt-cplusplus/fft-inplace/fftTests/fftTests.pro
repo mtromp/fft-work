@@ -12,7 +12,8 @@ CONFIG -= app_bundle
 CONFIG += thread
 CONFIG += testcase
 
-SOURCES +=  main.cpp 
+SOURCES +=  main.cpp  \
+  tst_fftExecute.cpp
 
 INCLUDEPATH += $$PWD/../fftLibrary
 LIBS += -L$$OUT_PWD/../fftLibrary -lfftLibrary

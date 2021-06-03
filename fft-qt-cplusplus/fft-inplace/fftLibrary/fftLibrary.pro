@@ -10,9 +10,11 @@ DEFINES += FFTLIBRARY_LIBRARY
 DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
+  inplacefft.cpp \
   mainwindow.cpp
 
 HEADERS += \
+  inplacefft.h \
   mainwindow.h
 
 unix {
