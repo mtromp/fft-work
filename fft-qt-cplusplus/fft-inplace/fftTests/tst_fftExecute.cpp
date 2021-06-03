@@ -2,6 +2,7 @@
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <gmock/gmock-matchers.h>
 
 #include <complex>
 #include <vector>
@@ -11,23 +12,36 @@
 #include <cmath>
 
 
-using namespace testing;
+using namespace ::testing;
 
+class FftPoint : public std::complex<float>
+{
+public:
+  FftPoint(float real=0.0, float imag=0.0) : std::complex<float>(real, imag){
+    this->realValue = this->real();
+    this->imagValue = this->imag();
+  }
 
-bool compare_complex(std::complex<float> x, std::complex<float> y, float epsilon = 0.01f){
-   if((fabs(x.real() - y.real()) < epsilon) && (fabs(x.imag() - y.imag() < epsilon)))
-   {
-      return true; //they are same
-   }
-   else
-   {
-      return false; //they are not same
-   }
+  float realValue;
+  float imagValue;
+};
+
+Matcher<float> MatchFloat(float expected)
+{
+  return FloatNear(expected, 0.0001);
 }
 
-MATCHER_P(ComplexNear, expected, "Expected %(expected): ")
+Matcher<FftPoint> MatchFftPoint(Matcher<float> mReal, Matcher<float> mImag)
 {
-  return compare_complex(arg, expected, 0.001);
+  return AllOf(
+        Field(&FftPoint::realValue, mReal),
+        Field(&FftPoint::imagValue, mImag)
+        );
+}
+
+Matcher<FftPoint> MatchFftPoint(const FftPoint& expectedPoint)
+{
+  return MatchFftPoint(expectedPoint.realValue, expectedPoint.imagValue);
 }
 
 class FFTExecuteTest: public Test
@@ -41,8 +55,8 @@ protected:
 
 TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
 {
-  std::vector<std::complex<float> > inputData;
-  std::vector<std::complex<float> > expectedData;
+  std::vector<FftPoint > inputData;
+  std::vector<FftPoint > expectedData;
 
   float cosineValue;
   float twoPiN = 2.0 * M_PI / 16.0;
@@ -50,11 +64,11 @@ TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
   for (int i = 0; i < 16; i++)
   {
     cosineValue = std::cos(twoPiN*i);
-    inputData.push_back(std::complex<float>(cosineValue, 0.0));
-    expectedData.push_back(std::complex<float>(cosineValue, 0.0));
+    inputData.push_back(FftPoint(cosineValue, 0.0));
+    expectedData.push_back(FftPoint(cosineValue, 0.0));
   }
 
-  EXPECT_THAT(std::complex<float>(1.0,0.0),ComplexNear(std::complex<float>(1.1,0.0)));
+  EXPECT_THAT(FftPoint(1.0,0.0),MatchFftPoint(FftPoint(1.002,0.0)));
 
  }
 
