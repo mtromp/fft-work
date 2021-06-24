@@ -1,4 +1,5 @@
 #include "inplacefft.h"
+#include "fftpoint.h"
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -13,18 +14,6 @@
 
 
 using namespace ::testing;
-
-class FftPoint : public std::complex<float>
-{
-public:
-  FftPoint(float real=0.0, float imag=0.0) : std::complex<float>(real, imag){
-    this->realValue = this->real();
-    this->imagValue = this->imag();
-  }
-
-  float realValue;
-  float imagValue;
-};
 
 Matcher<float> MatchFloat(float expected)
 {
@@ -55,8 +44,8 @@ protected:
 
 TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
 {
-  std::vector<FftPoint > inputData;
-  std::vector<FftPoint > expectedData;
+  std::vector<FftPoint> inputData;
+  std::vector<FftPoint> expectedData;
 
   float cosineValue;
   float twoPiN = 2.0 * M_PI / 16.0;
@@ -68,7 +57,15 @@ TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
     expectedData.push_back(FftPoint(cosineValue, 0.0));
   }
 
-  EXPECT_THAT(FftPoint(1.0,0.0),MatchFftPoint(FftPoint(1.002,0.0)));
+  InPlaceFFT theFFT;
+  theFFT.Execute(inputData);
+
+  ASSERT_EQ(inputData.size(), expectedData.size());
+
+  for (uint i = 0; i < inputData.size(); i++)
+  {
+    EXPECT_THAT(inputData[i],MatchFftPoint(expectedData[i])) << "Vectors x and y differ at index " << i;
+  }
 
  }
 

@@ -5,7 +5,7 @@ InPlaceFFT::InPlaceFFT()
 
 }
 
-void InPlaceFFT::Execute(std::vector<std::complex<float>> *dataArray)
+void InPlaceFFT::Execute(std::vector<FftPoint>& dataArray)
 {
   (void)dataArray;
 }
