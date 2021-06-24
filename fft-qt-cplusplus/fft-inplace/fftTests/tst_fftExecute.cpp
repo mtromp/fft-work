@@ -57,8 +57,7 @@ TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
     expectedData.push_back(FftPoint(cosineValue, 0.0));
   }
 
-  InPlaceFFT theFFT;
-  theFFT.Execute(inputData);
+  myFFT.Execute(inputData);
 
   ASSERT_EQ(inputData.size(), expectedData.size());
 
