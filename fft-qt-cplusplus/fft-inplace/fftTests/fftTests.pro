@@ -17,3 +17,6 @@ SOURCES +=  main.cpp  \
 
 INCLUDEPATH += $$PWD/../fftLibrary
 LIBS += -L$$OUT_PWD/../fftLibrary -lfftLibrary
+
+HEADERS += \
+  match_FftPoint.h

@@ -1,6 +1,8 @@
 #include "inplacefft.h"
 #include "fftpoint.h"
 
+#include "match_FftPoint.h"
+
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <gmock/gmock-matchers.h>
@@ -14,24 +16,6 @@
 
 
 using namespace ::testing;
-
-Matcher<float> MatchFloat(float expected)
-{
-  return FloatNear(expected, 0.0001);
-}
-
-Matcher<FftPoint> MatchFftPoint(Matcher<float> mReal, Matcher<float> mImag)
-{
-  return AllOf(
-        Field(&FftPoint::realValue, mReal),
-        Field(&FftPoint::imagValue, mImag)
-        );
-}
-
-Matcher<FftPoint> MatchFftPoint(const FftPoint& expectedPoint)
-{
-  return MatchFftPoint(expectedPoint.realValue, expectedPoint.imagValue);
-}
 
 class FFTExecuteTest: public Test
 {
