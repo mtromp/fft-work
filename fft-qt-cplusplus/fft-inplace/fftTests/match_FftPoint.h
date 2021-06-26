@@ -9,7 +9,7 @@ using namespace ::testing;
 
 Matcher<float> MatchFloat(float expected)
 {
-  return FloatNear(expected, 0.0001);
+  return FloatNear(expected, 0.001);
 }
 
 Matcher<FftPoint> MatchFftPoint(Matcher<float> mReal, Matcher<float> mImag)
@@ -22,8 +22,6 @@ Matcher<FftPoint> MatchFftPoint(Matcher<float> mReal, Matcher<float> mImag)
 
 Matcher<FftPoint> MatchFftPoint(const FftPoint& expectedPoint)
 {
-  return MatchFftPoint(expectedPoint.realValue, expectedPoint.imagValue);
+  return MatchFftPoint(MatchFloat(expectedPoint.realValue), MatchFloat(expectedPoint.imagValue));
 }
-
-
 #endif // MATCH_FFTPOINT_H

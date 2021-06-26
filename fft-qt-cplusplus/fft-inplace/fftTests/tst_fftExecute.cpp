@@ -24,11 +24,26 @@ protected:
 
   InPlaceFFT myFFT;
 };
-
 TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
 {
   std::vector<FftPoint> inputData;
   std::vector<FftPoint> expectedData;
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(2.414214, -1.000002));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(2.999998, 2.414216));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(0.999618, 2.413216));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(1.585786, -1.000002));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(1.585786, 1.000002));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(1.000002, -2.414216));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(3.000382, -2.414216));
+  expectedData.push_back(FftPoint(0.0, 0.0));
+  expectedData.push_back(FftPoint(2.414214, 1.000002));
 
   float cosineValue;
   float twoPiN = 2.0 * M_PI / 16.0;
@@ -37,7 +52,6 @@ TEST_F(FFTExecuteTest, FFTProducesExpectedResultsInPlace)
   {
     cosineValue = std::cos(twoPiN*i);
     inputData.push_back(FftPoint(cosineValue, 0.0));
-    expectedData.push_back(FftPoint(cosineValue, 0.0));
   }
 
   myFFT.Execute(inputData);

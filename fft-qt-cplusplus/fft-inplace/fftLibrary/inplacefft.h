@@ -16,6 +16,9 @@ public:
 private:
 
   void InitializeSinCosTables(int theSize);
+  void DoFFT(std::vector<FftPoint>& dataArray);
+  int ReverseWidthBits(int value, int width);
+  void Unscramble(std::vector<FftPoint>& dataArray);
   std::vector<float> * sinTable = nullptr;
   std::vector<float> * cosTable = nullptr;
 };
