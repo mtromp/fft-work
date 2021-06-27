@@ -9,7 +9,7 @@ using namespace ::testing;
 
 Matcher<float> MatchFloat(float expected)
 {
-  return FloatNear(expected, 0.001);
+  return FloatNear(expected, 0.00001);
 }
 
 Matcher<FftPoint> MatchFftPoint(Matcher<float> mReal, Matcher<float> mImag)

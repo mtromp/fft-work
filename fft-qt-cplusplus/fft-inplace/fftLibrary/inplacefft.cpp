@@ -81,7 +81,7 @@ void InPlaceFFT::DoFFT(std::vector<FftPoint>& dataArray)
 
         nspan = index + stride;
         tempReal = dataArray.at(nspan).realValue*cosTwiddle + dataArray.at(nspan).imagValue*sinTwiddle;
-        tempImag = dataArray.at(nspan).imagValue*cosTwiddle + dataArray.at(nspan).realValue*sinTwiddle;
+        tempImag = dataArray.at(nspan).imagValue*cosTwiddle - dataArray.at(nspan).realValue*sinTwiddle;
 
         dataArray.at(nspan).realValue = dataArray.at(index).realValue - tempReal;
         dataArray.at(nspan).imagValue = dataArray.at(index).imagValue - tempImag;
