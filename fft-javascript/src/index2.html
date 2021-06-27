@@ -92,13 +92,13 @@
       }
 
       function reverseWidthBits(value, width) {
-    		var result = 0;
-    		for (var i = 0; i < width; i++) {
-    			result = (result << 1) | (value & 1);
-    			value >>>= 1;
-    		}
-    		return result;
-    	}
+        var result = 0;
+        for (var i = 0; i < width; i++) {
+          result = (result << 1) | (value & 1);
+          value >>>= 1;
+        }
+        return result;
+      }
 
       function reconstitute(finalArray, realArray, imagArray){
         //the zeroeth element:
@@ -150,7 +150,7 @@
               nspan = index + stride;
               // the value for the new index element is straight addition.
               tempReal = aRealArray[nspan]*cosTwiddle + bImagArray[nspan]*sinTwiddle;
-              tempImag = bImagArray[nspan]*cosTwiddle + aRealArray[nspan]*sinTwiddle;
+              tempImag = bImagArray[nspan]*cosTwiddle - aRealArray[nspan]*sinTwiddle;
               aRealArray[nspan] = aRealArray[index] - tempReal;
               bImagArray[nspan] = bImagArray[index] - tempImag;
               aRealArray[index] = aRealArray[index] + tempReal;
